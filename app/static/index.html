@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Textbook Retrieval</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e37;
+    --text: #e6e8eb;
+    --muted: #9aa0ab;
+    --accent: #5b8def;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 16px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .row > div { flex: 1; min-width: 140px; }
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  input {
+    width: 100%;
+    background: #0f1115;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  input:focus { outline: 1px solid var(--accent); }
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.6; cursor: default; }
+  .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .cols { display: flex; gap: 20px; flex-wrap: wrap; }
+  .col { flex: 1; min-width: 320px; }
+  .col h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .card .meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card .meta .score { color: var(--accent); }
+  .card p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+  .card img {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #000;
+  }
+  .empty { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Textbook Retrieval</h1>
+
+  <div class="panel">
+    <div class="row">
+      <div>
+        <label>Book ID</label>
+        <input id="bookId" value="ts_scert_class5_environmental_studies_en" />
+      </div>
+      <div style="max-width:120px;">
+        <label>Chapter (optional)</label>
+        <input id="chapter" type="number" min="1" placeholder="any" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>Query</label>
+        <input id="query" placeholder="e.g. agricultural tools used for cultivation" />
+      </div>
+      <div style="max-width:100px;">
+        <label>Top K text</label>
+        <input id="topKText" type="number" value="5" min="1" max="20" />
+      </div>
+      <div style="max-width:100px;">
+        <label>Top K images</label>
+        <input id="topKImages" type="number" value="3" min="1" max="20" />
+      </div>
+    </div>
+    <button id="searchBtn">Search</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <h2>Text</h2>
+      <div id="textResults"><div class="empty">No results yet.</div></div>
+    </div>
+    <div class="col">
+      <h2>Images</h2>
+      <div id="imageResults"><div class="empty">No results yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const btn = document.getElementById('searchBtn');
+const statusEl = document.getElementById('status');
+const textResults = document.getElementById('textResults');
+const imageResults = document.getElementById('imageResults');
+
+async function runSearch() {
+  const book_id = document.getElementById('bookId').value.trim();
+  const chapterRaw = document.getElementById('chapter').value;
+  const query = document.getElementById('query').value.trim();
+  const top_k_text = parseInt(document.getElementById('topKText').value || '5', 10);
+  const top_k_images = parseInt(document.getElementById('topKImages').value || '3', 10);
+
+  if (!book_id || !query) {
+    statusEl.textContent = 'Book ID and query are required.';
+    return;
+  }
+
+  const payload = { book_id, query, top_k_text, top_k_images };
+  if (chapterRaw) payload.chapter = parseInt(chapterRaw, 10);
+
+  btn.disabled = true;
+  statusEl.textContent = 'Searching...';
+
+  try {
+    const res = await fetch('/retrieve-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+    const data = await res.json();
+    renderText(data.text || []);
+    renderImages(data.images || []);
+    statusEl.textContent = `${(data.text || []).length} text results, ${(data.images || []).length} image results.`;
+  } catch (err) {
+    statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderText(items) {
+  if (!items.length) {
+    textResults.innerHTML = '<div class="empty">No matches.</div>';
+    return;
+  }
+  textResults.innerHTML = items.map(item => `
+    <div class="card">
+      <div class="meta">
+        <span>Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
+        <span class="score">${item.score.toFixed(3)}</span>
+      </div>
+      <p>${escapeHtml(item.text)}</p>
+    </div>
+  `).join('');
+}
+
+function renderImages(items) {
+  if (!items.length) {
+    imageResults.innerHTML = '<div class="empty">No matches.</div>';
+    return;
+  }
+  imageResults.innerHTML = items.map(item => `
+    <div class="card">
+      <img src="${item.url}" alt="${escapeHtml(item.image_id)}" loading="lazy" />
+      <div class="meta">
+        <span>Page ${item.page_number ?? '?'} · ${escapeHtml(item.image_id)}</span>
+        <span class="score">${item.score.toFixed(3)}</span>
+      </div>
+      <p>${escapeHtml(item.caption)}</p>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+btn.addEventListener('click', runSearch);
+document.getElementById('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+</script>
+</body>
+</html>
