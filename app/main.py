@@ -13,6 +13,11 @@ def serve_ui():
     return FileResponse(STATIC_DIR / "index.html")
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/retrieve-content", response_model=RetrieveResponse)
 def retrieve_content_endpoint(request: RetrieveRequest) -> RetrieveResponse:
     return retrieve_content(request)
