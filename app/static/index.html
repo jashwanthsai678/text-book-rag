@@ -9,110 +9,166 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0b10;
-    --bg-glow: radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,0.16), transparent 60%);
-    --panel: #12141c;
-    --panel-2: #171a24;
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.14);
-    --text: #eef0f4;
-    --muted: #8b8fa3;
-    --accent: #6366f1;
-    --accent-2: #8b5cf6;
-    --accent-soft: rgba(99,102,241,0.14);
-    --good: #34d399;
+    --bg: #eef1f6;
+    --card: #ffffff;
+    --border: #e4e7ee;
+    --text: #111827;
+    --muted: #6b7280;
+    --label: #8a8f9c;
+    --accent: #4f46e5;
+    --accent-soft: #eef0fc;
+    --cta: #111827;
+    --score-bg: #eef0fc;
+    --score-text: #4338ca;
+    --score-border: #d9dcf7;
     --radius: 14px;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: 'Inter', -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: var(--bg) var(--bg-glow) no-repeat;
+    background: var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
   }
   .container {
     max-width: 1040px;
     margin: 0 auto;
-    padding: 40px 16px 80px;
+    padding: 36px 16px 80px;
   }
-  header {
-    margin-bottom: 28px;
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
   }
-  header h1 {
-    font-size: 28px;
+  .brand .mark {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--accent);
+    color: white;
     font-weight: 800;
-    letter-spacing: -0.02em;
-    margin: 0 0 6px;
-    background: linear-gradient(135deg, #fff 30%, #c4c8ff 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  header p {
+  .brand h1 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
+  .brand p {
     margin: 0;
     color: var(--muted);
-    font-size: 14.5px;
+    font-size: 13px;
   }
+
+  .explainer {
+    background: var(--accent-soft);
+    border: 1px solid #e0e3fa;
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 24px;
+  }
+  .explainer .lede {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin: 0 0 14px;
+  }
+  .explainer .lede b { color: var(--accent); }
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    color: #374151;
+  }
+  .step .num {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
   .panel {
-    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 22px;
+    padding: 24px;
     margin-bottom: 28px;
-    box-shadow: 0 20px 50px -24px rgba(0,0,0,0.6);
+    box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  }
+  .panel > h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .panel > .sub {
+    color: var(--muted);
+    font-size: 13.5px;
+    margin: 0 0 20px;
   }
   .row {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
-  .row:last-of-type { margin-bottom: 18px; }
-  .row > div { flex: 1; min-width: 140px; }
+  .row > div { flex: 1; min-width: 160px; }
   label {
     display: block;
-    font-size: 11.5px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
+    letter-spacing: 0.05em;
+    color: var(--label);
     margin-bottom: 7px;
   }
   input {
     width: 100%;
-    background: #0d0e14;
+    background: #f6f7fb;
     border: 1px solid var(--border);
     border-radius: 9px;
     color: var(--text);
     padding: 11px 13px;
     font-size: 14.5px;
     font-family: inherit;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   }
-  input::placeholder { color: #565a6b; }
+  input::placeholder { color: #9ca3af; }
   input:focus {
     outline: none;
+    background: #fff;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
   }
-  .actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   button {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    background: var(--cta);
     color: white;
     border: none;
     border-radius: 9px;
-    padding: 12px 26px;
+    padding: 12px 28px;
     font-size: 14.5px;
     font-weight: 700;
     font-family: inherit;
     cursor: pointer;
-    box-shadow: 0 8px 20px -8px rgba(99,102,241,0.6);
-    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    transition: opacity 0.12s ease, transform 0.12s ease;
   }
-  button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(99,102,241,0.75); }
-  button:active:not(:disabled) { transform: translateY(0); }
-  button:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+  button:hover:not(:disabled) { opacity: 0.92; }
+  button:active:not(:disabled) { transform: translateY(1px); }
+  button:disabled { opacity: 0.5; cursor: default; }
   .status {
     font-size: 13px;
     color: var(--muted);
@@ -122,7 +178,7 @@
   }
   .spinner {
     width: 13px; height: 13px;
-    border: 2px solid var(--border-strong);
+    border: 2px solid var(--border);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
@@ -133,92 +189,94 @@
 
   .cols { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
   .col { flex: 1; min-width: 320px; }
-  .col h2 {
-    font-size: 12.5px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    margin: 0 0 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .col h2::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  }
-  .card {
-    background: var(--panel);
+  .col-panel {
+    background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: 0 1px 2px rgba(16,24,40,0.04);
   }
-  .card:hover {
-    border-color: var(--border-strong);
-    transform: translateY(-2px);
-    box-shadow: 0 16px 32px -20px rgba(0,0,0,0.7);
+  .col-panel h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 4px;
   }
-  .card .meta {
+  .col-panel .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 16px;
+  }
+  .result {
+    border-top: 1px solid var(--border);
+    padding: 16px 0;
+  }
+  .result:first-of-type { border-top: none; padding-top: 4px; }
+  .result .meta {
     font-size: 12px;
     color: var(--muted);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 10px;
   }
-  .card .meta .loc { line-height: 1.4; }
-  .card .meta .score {
+  .result .meta .loc { line-height: 1.4; font-weight: 600; color: #374151; }
+  .result .meta .score {
     flex-shrink: 0;
-    color: #c7c9ff;
-    background: var(--accent-soft);
-    border: 1px solid rgba(139,92,246,0.3);
-    padding: 2px 9px;
+    color: var(--score-text);
+    background: var(--score-bg);
+    border: 1px solid var(--score-border);
+    padding: 2px 10px;
     border-radius: 999px;
     font-weight: 700;
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
   }
-  .card p { margin: 0; font-size: 13.5px; line-height: 1.6; color: #d5d7e0; }
-  .card .thumb-wrap {
+  .result p { margin: 0; font-size: 13.5px; line-height: 1.6; color: #374151; }
+  .result .thumb-wrap {
     width: 100%;
     aspect-ratio: 16 / 10;
     border-radius: 9px;
     margin-bottom: 10px;
     overflow: hidden;
-    background: #0d0e14;
+    background: #eef1f6;
+    border: 1px solid var(--border);
   }
-  .card img {
+  .result img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 0.3s ease;
   }
-  .card:hover img { transform: scale(1.04); }
   .empty, .hint {
     color: var(--muted);
     font-size: 13.5px;
-    padding: 18px;
-    text-align: center;
-    border: 1px dashed var(--border);
-    border-radius: 12px;
+    padding: 16px 0;
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <header>
-    <h1>Textbook Retrieval</h1>
-    <p>Semantic search across the indexed textbook catalog — ask a question, get the real pages and images behind it.</p>
-  </header>
+  <div class="brand">
+    <div class="mark">TR</div>
+    <div>
+      <h1>Textbook Retrieval</h1>
+      <p>Semantic search over the indexed textbook catalog</p>
+    </div>
+  </div>
+
+  <div class="explainer">
+    <p class="lede"><b>What is this?</b> Search the real content of published textbooks - the same text and images a lesson or test generator would use as grounding, instead of an AI guessing.</p>
+    <div class="steps">
+      <div class="step"><span class="num">1</span> Type a question or topic</div>
+      <div class="step"><span class="num">2</span> Optionally narrow it to one chapter</div>
+      <div class="step"><span class="num">3</span> Click <b>Search</b> to see matching pages and images</div>
+    </div>
+  </div>
 
   <div class="panel">
+    <h2>Search the catalog</h2>
+    <p class="sub">Searches across every indexed book. Add a chapter number only if you want to narrow it down.</p>
     <div class="row">
       <div>
         <label>Query</label>
@@ -247,12 +305,18 @@
 
   <div class="cols">
     <div class="col">
-      <h2>Text</h2>
-      <div id="textResults"><div class="hint">Run a search to see matching textbook passages.</div></div>
+      <div class="col-panel">
+        <h2>Text</h2>
+        <p class="sub">Matching passages, most relevant first</p>
+        <div id="textResults"><div class="hint">Run a search to see matching textbook passages.</div></div>
+      </div>
     </div>
     <div class="col">
-      <h2>Images</h2>
-      <div id="imageResults"><div class="hint">Run a search to see matching images.</div></div>
+      <div class="col-panel">
+        <h2>Images</h2>
+        <p class="sub">Matching figures, most relevant first</p>
+        <div id="imageResults"><div class="hint">Run a search to see matching images.</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -310,7 +374,7 @@ function renderText(items) {
     return;
   }
   textResults.innerHTML = items.map(item => `
-    <div class="card">
+    <div class="result">
       <div class="meta">
         <span class="loc">${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
         <span class="score">${item.score.toFixed(3)}</span>
@@ -326,7 +390,7 @@ function renderImages(items) {
     return;
   }
   imageResults.innerHTML = items.map(item => `
-    <div class="card">
+    <div class="result">
       <div class="thumb-wrap">
         <img src="${item.url}" alt="${escapeHtml(item.image_id)}" loading="lazy" />
       </div>
