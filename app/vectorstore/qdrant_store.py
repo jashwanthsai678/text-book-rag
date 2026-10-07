@@ -1,4 +1,5 @@
 import os
+import uuid
 from typing import Any, Dict, List
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient
@@ -15,6 +16,13 @@ TEXT_COLLECTION = "textbook_text"
 IMAGE_COLLECTION = "textbook_images"
 
 _client = None
+
+
+def stable_id(name: str) -> str:
+    """Deterministic point ID derived from a natural key (e.g. book_id +
+    image_id), so re-running ingestion/indexing upserts the same point
+    instead of creating a duplicate."""
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, name))
 
 
 def get_client() -> QdrantClient:

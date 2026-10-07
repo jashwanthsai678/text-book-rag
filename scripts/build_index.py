@@ -1,6 +1,5 @@
 import json
 import sys
-import uuid
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -9,15 +8,12 @@ from app.embeddings.embedder import embed_texts
 from app.vectorstore.qdrant_store import (
     ensure_collections,
     upsert_points,
+    stable_id,
     TEXT_COLLECTION,
     IMAGE_COLLECTION,
 )
 
 PROCESSED_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
-
-
-def stable_id(name: str) -> str:
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, name))
 
 
 def build_book_records(book_id: str, chapters: list):

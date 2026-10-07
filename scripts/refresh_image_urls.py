@@ -14,17 +14,12 @@ every 3-4 hours) so served URLs are never stale.
 """
 
 import sys
-import uuid
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from app.ingestion.api_client import list_books, list_chapters, fetch_chapter
-from app.vectorstore.qdrant_store import IMAGE_COLLECTION, set_point_payload
-
-
-def stable_id(name: str) -> str:
-    return str(uuid.uuid5(uuid.NAMESPACE_URL, name))
+from app.vectorstore.qdrant_store import IMAGE_COLLECTION, set_point_payload, stable_id
 
 
 def refresh_book(book_id: str):
