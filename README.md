@@ -63,10 +63,12 @@ app/
     index.html      # manual-testing UI
   main.py           # FastAPI app: GET / (UI), POST /retrieve-content
 scripts/
-  ingest_book.py    # discovers every published book and chapter, writes data/processed/*.json
-  build_index.py    # embeds + upserts every processed book into Qdrant
+  ingest_book.py        # discovers every published book and chapter, writes data/processed/*.json
+  build_index.py        # embeds + upserts every processed book into Qdrant
+  refresh_image_urls.py # payload-only refresh of image URLs (see "Image URL expiry" below)
 data/
   processed/        # ingestion output (gitignored, regenerate via ingest_book.py)
+Dockerfile           # CPU-only torch, model pre-downloaded at build time (~2.3GB image)
 ```
 
 ## Setup
@@ -79,7 +81,11 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2. Qdrant (local)
+### 2. Qdrant
+
+**Production / default: Qdrant Cloud.** Create a free cluster at [cloud.qdrant.io](https://cloud.qdrant.io) and put its URL + API key in `.env` (see below). This is what the deployed app uses - data survives independently of any one machine.
+
+**Local dev fallback:** a local Docker Qdrant also works (no API key needed) if you want to develop without touching the cloud cluster:
 
 ```powershell
 docker run -d `
@@ -94,7 +100,7 @@ Dashboard: http://localhost:6333/dashboard
 
 ### 3. Environment variables
 
-Copy `.env.example` to `.env`. Defaults work out of the box; the `*_FILTER` vars narrow ingestion to a subset of the catalog (by board/grade/subject/language) if you don't want to ingest every published book.
+Copy `.env.example` to `.env` and fill in `QDRANT_URL` (+ `QDRANT_API_KEY` if using Qdrant Cloud). The `*_FILTER` vars narrow ingestion to a subset of the catalog (by board/grade/subject/language) if you don't want to ingest every published book.
 
 ## Usage
 
@@ -105,8 +111,18 @@ python scripts\ingest_book.py
 # 2. Embed + index everything in data/processed/ into Qdrant
 python scripts\build_index.py
 
-# 3. Run the API + UI
+# 3. Refresh image URLs (needed periodically - see "Image URL expiry" below)
+python scripts\refresh_image_urls.py
+
+# 4. Run the API + UI
 uvicorn app.main:app --reload --port 8000
+```
+
+### Docker
+
+```powershell
+docker build -t textbook-retrieval .
+docker run -d -p 8000:8000 --env-file .env textbook-retrieval
 ```
 
 Open http://localhost:8000 for the manual test UI, or call the API directly:
@@ -128,9 +144,13 @@ Response shape:
 }
 ```
 
-## Known limitations / open items
+## Production status
 
-- **Image URLs expire.** The textbook API returns Supabase signed URLs valid for ~6 hours. URLs cached in Qdrant at ingestion time will eventually 403. Not yet handled — needs either re-fetching a fresh URL at serve time, or periodic re-ingestion.
-- **No generation layer yet.** This repo stops at retrieval. Prep material / worksheet / test generation (feeding retrieved content into an LLM) is a separate, not-yet-built consumer of `/retrieve-content`.
-- **Still local-only.** Qdrant runs in local Docker and embeddings run on the local machine. Moving to production means pointing `QdrantClient` at a hosted/cloud Qdrant instance and deploying the FastAPI service — the client code is already structured so that's just a URL/API-key swap.
-- **EduTeach API uptime.** It runs on a free Render tier and cold-starts slowly (sometimes causing request timeouts) — `api_client.py` retries on timeout/5xx to absorb this.
+- ✅ **Qdrant Cloud** — the live index runs on a managed Qdrant Cloud cluster (AWS, eu-central-1), not local Docker. Local Docker Qdrant still works as a dev-only fallback (no API key needed).
+- ✅ **Image URL expiry handled.** The textbook API returns Supabase signed URLs valid for ~6 hours. `scripts/refresh_image_urls.py` does a payload-only update (no re-embedding) of every indexed image's URL by re-fetching its chapter. Run it on a schedule (every 3-4 hours) in production so served URLs are never stale.
+- ✅ **Dockerized.** `Dockerfile` builds a ~2.3GB image (CPU-only torch, embedding model pre-downloaded at build time so containers start fast with no Hugging Face access needed at runtime).
+- ⬜ **Not yet deployed.** The API still only runs via `uvicorn` on a local/manual machine - no public URL yet.
+- ⬜ **Not every published book is indexed.** The catalog currently has 8 published books; only `ts_scert_class5_environmental_studies_en` has been run through `build_index.py`. `ingest_book.py` already discovers and can ingest all of them - it just hasn't been run against the full catalog yet.
+- ⬜ **No generation layer yet.** This repo stops at retrieval. Prep material / worksheet / test generation (feeding retrieved content into an LLM) is a separate, not-yet-built consumer of `/retrieve-content`.
+- ⬜ **Ingestion is still manual.** `ingest_book.py` / `build_index.py` / `refresh_image_urls.py` are run by hand. Production needs these on a schedule (cron / scheduled job).
+- ℹ️ **EduTeach API uptime.** It runs on a free Render tier and cold-starts slowly (sometimes causing request timeouts) — `api_client.py` retries on timeout/5xx to absorb this. Some chapters also contain images with a null `url` (upstream data issue) - these are skipped rather than breaking the whole chapter.

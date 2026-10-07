@@ -6,7 +6,7 @@ class ImageAsset(BaseModel):
     image_id: str
     caption: str
     order_index: int
-    url: str
+    url: Optional[str] = None
     usage: str
     relevance: str
 

@@ -8,6 +8,9 @@ from app.vectorstore.qdrant_store import get_client, TEXT_COLLECTION, IMAGE_COLL
 
 class TextResult(BaseModel):
     chunk_id: str
+    book_id: str
+    chapter_number: int
+    chapter_title: str
     page_number: int
     section_title: Optional[str]
     text: str
@@ -16,6 +19,9 @@ class TextResult(BaseModel):
 
 class ImageResult(BaseModel):
     image_id: str
+    book_id: str
+    chapter_number: int
+    chapter_title: str
     page_number: Optional[int]
     caption: str
     url: str
@@ -23,7 +29,7 @@ class ImageResult(BaseModel):
 
 
 class RetrieveRequest(BaseModel):
-    book_id: str
+    book_id: Optional[str] = None
     chapter: Optional[int] = None
     query: str
     top_k_text: int = 5
@@ -35,13 +41,15 @@ class RetrieveResponse(BaseModel):
     images: List[ImageResult]
 
 
-def _build_filter(book_id: str, chapter: Optional[int]) -> Filter:
-    conditions = [FieldCondition(key="book_id", match=MatchValue(value=book_id))]
+def _build_filter(book_id: Optional[str], chapter: Optional[int]) -> Optional[Filter]:
+    conditions = []
+    if book_id is not None:
+        conditions.append(FieldCondition(key="book_id", match=MatchValue(value=book_id)))
     if chapter is not None:
         conditions.append(
             FieldCondition(key="chapter_number", match=MatchValue(value=chapter))
         )
-    return Filter(must=conditions)
+    return Filter(must=conditions) if conditions else None
 
 
 def retrieve_content(request: RetrieveRequest) -> RetrieveResponse:
@@ -66,6 +74,9 @@ def retrieve_content(request: RetrieveRequest) -> RetrieveResponse:
     text_results = [
         TextResult(
             chunk_id=hit.payload["chunk_id"],
+            book_id=hit.payload["book_id"],
+            chapter_number=hit.payload["chapter_number"],
+            chapter_title=hit.payload["chapter_title"],
             page_number=hit.payload["page_number"],
             section_title=hit.payload["section_title"],
             text=hit.payload["text"],
@@ -77,6 +88,9 @@ def retrieve_content(request: RetrieveRequest) -> RetrieveResponse:
     image_results = [
         ImageResult(
             image_id=hit.payload["image_id"],
+            book_id=hit.payload["book_id"],
+            chapter_number=hit.payload["chapter_number"],
+            chapter_title=hit.payload["chapter_title"],
             page_number=hit.payload["page_number"],
             caption=hit.payload["caption"],
             url=hit.payload["url"],

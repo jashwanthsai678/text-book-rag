@@ -115,8 +115,8 @@
   <div class="panel">
     <div class="row">
       <div>
-        <label>Book ID</label>
-        <input id="bookId" value="ts_scert_class5_environmental_studies_en" />
+        <label>Query</label>
+        <input id="query" placeholder="e.g. agricultural tools used for cultivation" />
       </div>
       <div style="max-width:120px;">
         <label>Chapter (optional)</label>
@@ -124,10 +124,6 @@
       </div>
     </div>
     <div class="row">
-      <div>
-        <label>Query</label>
-        <input id="query" placeholder="e.g. agricultural tools used for cultivation" />
-      </div>
       <div style="max-width:100px;">
         <label>Top K text</label>
         <input id="topKText" type="number" value="5" min="1" max="20" />
@@ -160,18 +156,17 @@ const textResults = document.getElementById('textResults');
 const imageResults = document.getElementById('imageResults');
 
 async function runSearch() {
-  const book_id = document.getElementById('bookId').value.trim();
   const chapterRaw = document.getElementById('chapter').value;
   const query = document.getElementById('query').value.trim();
   const top_k_text = parseInt(document.getElementById('topKText').value || '5', 10);
   const top_k_images = parseInt(document.getElementById('topKImages').value || '3', 10);
 
-  if (!book_id || !query) {
-    statusEl.textContent = 'Book ID and query are required.';
+  if (!query) {
+    statusEl.textContent = 'Query is required.';
     return;
   }
 
-  const payload = { book_id, query, top_k_text, top_k_images };
+  const payload = { query, top_k_text, top_k_images };
   if (chapterRaw) payload.chapter = parseInt(chapterRaw, 10);
 
   btn.disabled = true;
@@ -206,7 +201,7 @@ function renderText(items) {
   textResults.innerHTML = items.map(item => `
     <div class="card">
       <div class="meta">
-        <span>Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
+        <span>${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
         <span class="score">${item.score.toFixed(3)}</span>
       </div>
       <p>${escapeHtml(item.text)}</p>
@@ -223,7 +218,7 @@ function renderImages(items) {
     <div class="card">
       <img src="${item.url}" alt="${escapeHtml(item.image_id)}" loading="lazy" />
       <div class="meta">
-        <span>Page ${item.page_number ?? '?'} · ${escapeHtml(item.image_id)}</span>
+        <span>${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number ?? '?'}</span>
         <span class="score">${item.score.toFixed(3)}</span>
       </div>
       <p>${escapeHtml(item.caption)}</p>
