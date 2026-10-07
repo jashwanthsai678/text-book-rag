@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct, PayloadSchemaType
 from qdrant_client.http.exceptions import UnexpectedResponse
+from app.embeddings.embedder import EMBEDDING_DIM
 
 load_dotenv()
 
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY")
-EMBEDDING_DIM = 384
 
 TEXT_COLLECTION = "textbook_text"
 IMAGE_COLLECTION = "textbook_images"

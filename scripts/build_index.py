@@ -56,7 +56,7 @@ def build_book_records(book_id: str, chapters: list):
             )
 
         for image in chapter["images"]:
-            if not image["url"]:
+            if not image["url"] or not image["caption"].strip():
                 continue
             page_number, section_title = image_location.get(
                 image["image_id"], (None, None)

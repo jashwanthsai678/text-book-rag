@@ -22,7 +22,8 @@ EduTeach Textbook API
         |
         v
   Embeddings (app/embeddings)
-   - BAAI/bge-small-en-v1.5 (local, via sentence-transformers)
+   - openai/text-embedding-3-small, via OpenRouter's /v1/embeddings API
+     (no local ML stack - the container has no torch/transformers at all)
    - text chunks embedded directly; images embedded via their captions
      (no vision model in v1 - captions are already descriptive)
         |
@@ -54,7 +55,7 @@ app/
     parser.py       # markdown -> page-anchored, heading-anchored sections
     models.py       # pydantic models: raw API response + parsed internal format
   embeddings/
-    embedder.py     # sentence-transformers wrapper
+    embedder.py     # calls OpenRouter's /v1/embeddings API (openai/text-embedding-3-small)
   vectorstore/
     qdrant_store.py # Qdrant client, collection setup, upsert
   retrieval/
@@ -68,7 +69,7 @@ scripts/
   refresh_image_urls.py # payload-only refresh of image URLs (see "Image URL expiry" below)
 data/
   processed/        # ingestion output (gitignored, regenerate via ingest_book.py)
-Dockerfile           # CPU-only torch, model pre-downloaded at build time (~2.3GB image)
+Dockerfile           # no ML stack needed - embeddings call out to OpenRouter (~370MB image)
 ```
 
 ## Setup
@@ -100,7 +101,7 @@ Dashboard: http://localhost:6333/dashboard
 
 ### 3. Environment variables
 
-Copy `.env.example` to `.env` and fill in `QDRANT_URL` (+ `QDRANT_API_KEY` if using Qdrant Cloud). The `*_FILTER` vars narrow ingestion to a subset of the catalog (by board/grade/subject/language) if you don't want to ingest every published book.
+Copy `.env.example` to `.env` and fill in `QDRANT_URL` (+ `QDRANT_API_KEY` if using Qdrant Cloud) and `OPENROUTER_API_KEY` (from [openrouter.ai](https://openrouter.ai) - needs credit loaded against the key; used for every embedding call, ingestion and query alike). The `*_FILTER` vars narrow ingestion to a subset of the catalog (by board/grade/subject/language) if you don't want to ingest every published book.
 
 ## Usage
 
@@ -148,9 +149,11 @@ Response shape:
 
 - ✅ **Qdrant Cloud** — the live index runs on a managed Qdrant Cloud cluster (AWS, eu-central-1), not local Docker. Local Docker Qdrant still works as a dev-only fallback (no API key needed).
 - ✅ **Image URL expiry handled.** The textbook API returns Supabase signed URLs valid for ~6 hours. `scripts/refresh_image_urls.py` does a payload-only update (no re-embedding) of every indexed image's URL by re-fetching its chapter. Run it on a schedule (every 3-4 hours) in production so served URLs are never stale.
-- ✅ **Dockerized.** `Dockerfile` builds a ~2.3GB image (CPU-only torch, embedding model pre-downloaded at build time so containers start fast with no Hugging Face access needed at runtime).
+- ✅ **Embeddings via OpenRouter, not a local model.** Switched from local `sentence-transformers` to OpenRouter's `/v1/embeddings` API (`openai/text-embedding-3-small`). This removed `torch`/`transformers` entirely, shrinking the Docker image from ~2.3GB to ~370MB and runtime RAM from ~500MB+ to ~50MB - comfortably inside Render's free-tier 512MB limit. Trade-off: every embedding call (ingestion *and* every single search query) now costs money and an external network round-trip, and needs `OPENROUTER_API_KEY` funded with credit.
+- ✅ **Dockerized and lightweight.** `Dockerfile` builds in ~20s with no heavy ML dependencies.
 - ⬜ **Not yet deployed.** The API still only runs via `uvicorn` on a local/manual machine - no public URL yet.
-- ⬜ **Not every published book is indexed.** The catalog currently has 8 published books; only `ts_scert_class5_environmental_studies_en` has been run through `build_index.py`. `ingest_book.py` already discovers and can ingest all of them - it just hasn't been run against the full catalog yet.
+- ⬜ **Not every published book is indexed.** The catalog currently has 8 published books; only 3 (`ts_scert_class5_environmental_studies_en`, `ts_scert_class3_environmental_studies_en`, `ts_scert_class3_maths_en`) have been run through `build_index.py`.
 - ⬜ **No generation layer yet.** This repo stops at retrieval. Prep material / worksheet / test generation (feeding retrieved content into an LLM) is a separate, not-yet-built consumer of `/retrieve-content`.
 - ⬜ **Ingestion is still manual.** `ingest_book.py` / `build_index.py` / `refresh_image_urls.py` are run by hand. Production needs these on a schedule (cron / scheduled job).
-- ℹ️ **EduTeach API uptime.** It runs on a free Render tier and cold-starts slowly (sometimes causing request timeouts) — `api_client.py` retries on timeout/5xx to absorb this. Some chapters also contain images with a null `url` (upstream data issue) - these are skipped rather than breaking the whole chapter.
+- ℹ️ **EduTeach API uptime.** It runs on a free Render tier and cold-starts slowly (sometimes causing request timeouts) — `api_client.py` retries on timeout/5xx to absorb this. Some chapters also contain images with a null or empty `url`/`caption` (upstream data issue) - these are skipped rather than breaking the whole chapter.
+- ℹ️ **Content format varies by book.** The EVS Class 5 book uses Markdown (`### heading` + `<!-- page N -->` markers); every other book seen so far uses bracket tags (`[CONCEPT]`, `[ACTIVITY]`, `[HEADING]`) with no page markers at all. `app/ingestion/parser.py` detects and handles both, but books without page markers can only be tagged with their chapter's starting page, not an exact page.
