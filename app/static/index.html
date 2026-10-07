@@ -2,115 +2,221 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Textbook Retrieval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --border: #2a2e37;
-    --text: #e6e8eb;
-    --muted: #9aa0ab;
-    --accent: #5b8def;
+    --bg: #0a0b10;
+    --bg-glow: radial-gradient(1200px 600px at 50% -10%, rgba(99,102,241,0.16), transparent 60%);
+    --panel: #12141c;
+    --panel-2: #171a24;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: #eef0f4;
+    --muted: #8b8fa3;
+    --accent: #6366f1;
+    --accent-2: #8b5cf6;
+    --accent-soft: rgba(99,102,241,0.14);
+    --good: #34d399;
+    --radius: 14px;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: var(--bg);
+    font-family: 'Inter', -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg) var(--bg-glow) no-repeat;
     color: var(--text);
+    -webkit-font-smoothing: antialiased;
   }
   .container {
-    max-width: 960px;
+    max-width: 1040px;
     margin: 0 auto;
-    padding: 24px 16px 60px;
+    padding: 40px 16px 80px;
   }
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-    margin: 0 0 16px;
+  header {
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 6px;
+    background: linear-gradient(135deg, #fff 30%, #c4c8ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14.5px;
   }
   .panel {
-    background: var(--panel);
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 20px;
+    border-radius: var(--radius);
+    padding: 22px;
+    margin-bottom: 28px;
+    box-shadow: 0 20px 50px -24px rgba(0,0,0,0.6);
   }
   .row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
   }
+  .row:last-of-type { margin-bottom: 18px; }
   .row > div { flex: 1; min-width: 140px; }
   label {
     display: block;
-    font-size: 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--muted);
-    margin-bottom: 4px;
+    margin-bottom: 7px;
   }
   input {
     width: 100%;
-    background: #0f1115;
+    background: #0d0e14;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 9px;
     color: var(--text);
-    padding: 8px 10px;
-    font-size: 14px;
+    padding: 11px 13px;
+    font-size: 14.5px;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  input:focus { outline: 1px solid var(--accent); }
+  input::placeholder { color: #565a6b; }
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   button {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 10px 18px;
-    font-size: 14px;
-    font-weight: 600;
+    border-radius: 9px;
+    padding: 12px 26px;
+    font-size: 14.5px;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
+    box-shadow: 0 8px 20px -8px rgba(99,102,241,0.6);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
   }
-  button:disabled { opacity: 0.6; cursor: default; }
-  .status { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .cols { display: flex; gap: 20px; flex-wrap: wrap; }
+  button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 24px -8px rgba(99,102,241,0.75); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+  .status {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .spinner {
+    width: 13px; height: 13px;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .spinner.show { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .cols { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
   .col { flex: 1; min-width: 320px; }
   .col h2 {
-    font-size: 14px;
+    font-size: 12.5px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
     color: var(--muted);
-    margin: 0 0 10px;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col h2::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
   }
   .card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px -20px rgba(0,0,0,0.7);
   }
   .card .meta {
     font-size: 12px;
     color: var(--muted);
-    margin-bottom: 6px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
   }
-  .card .meta .score { color: var(--accent); }
-  .card p { margin: 0; font-size: 13.5px; line-height: 1.5; }
+  .card .meta .loc { line-height: 1.4; }
+  .card .meta .score {
+    flex-shrink: 0;
+    color: #c7c9ff;
+    background: var(--accent-soft);
+    border: 1px solid rgba(139,92,246,0.3);
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .card p { margin: 0; font-size: 13.5px; line-height: 1.6; color: #d5d7e0; }
+  .card .thumb-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 9px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background: #0d0e14;
+  }
   .card img {
     width: 100%;
-    max-height: 180px;
+    height: 100%;
     object-fit: cover;
-    border-radius: 6px;
-    margin-bottom: 8px;
-    background: #000;
+    display: block;
+    transition: transform 0.3s ease;
   }
-  .empty { color: var(--muted); font-size: 13px; }
+  .card:hover img { transform: scale(1.04); }
+  .empty, .hint {
+    color: var(--muted);
+    font-size: 13.5px;
+    padding: 18px;
+    text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+  }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Textbook Retrieval</h1>
+  <header>
+    <h1>Textbook Retrieval</h1>
+    <p>Semantic search across the indexed textbook catalog — ask a question, get the real pages and images behind it.</p>
+  </header>
 
   <div class="panel">
     <div class="row">
@@ -118,40 +224,43 @@
         <label>Query</label>
         <input id="query" placeholder="e.g. agricultural tools used for cultivation" />
       </div>
-      <div style="max-width:120px;">
+      <div style="max-width:140px;">
         <label>Chapter (optional)</label>
         <input id="chapter" type="number" min="1" placeholder="any" />
       </div>
     </div>
     <div class="row">
-      <div style="max-width:100px;">
+      <div style="max-width:120px;">
         <label>Top K text</label>
         <input id="topKText" type="number" value="5" min="1" max="20" />
       </div>
-      <div style="max-width:100px;">
+      <div style="max-width:120px;">
         <label>Top K images</label>
         <input id="topKImages" type="number" value="3" min="1" max="20" />
       </div>
     </div>
-    <button id="searchBtn">Search</button>
-    <div class="status" id="status"></div>
+    <div class="actions">
+      <button id="searchBtn">Search</button>
+      <div class="status" id="status"><span class="spinner" id="spinner"></span><span id="statusText"></span></div>
+    </div>
   </div>
 
   <div class="cols">
     <div class="col">
       <h2>Text</h2>
-      <div id="textResults"><div class="empty">No results yet.</div></div>
+      <div id="textResults"><div class="hint">Run a search to see matching textbook passages.</div></div>
     </div>
     <div class="col">
       <h2>Images</h2>
-      <div id="imageResults"><div class="empty">No results yet.</div></div>
+      <div id="imageResults"><div class="hint">Run a search to see matching images.</div></div>
     </div>
   </div>
 </div>
 
 <script>
 const btn = document.getElementById('searchBtn');
-const statusEl = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const spinner = document.getElementById('spinner');
 const textResults = document.getElementById('textResults');
 const imageResults = document.getElementById('imageResults');
 
@@ -162,7 +271,7 @@ async function runSearch() {
   const top_k_images = parseInt(document.getElementById('topKImages').value || '3', 10);
 
   if (!query) {
-    statusEl.textContent = 'Query is required.';
+    statusText.textContent = 'Query is required.';
     return;
   }
 
@@ -170,7 +279,8 @@ async function runSearch() {
   if (chapterRaw) payload.chapter = parseInt(chapterRaw, 10);
 
   btn.disabled = true;
-  statusEl.textContent = 'Searching...';
+  spinner.classList.add('show');
+  statusText.textContent = 'Searching...';
 
   try {
     const res = await fetch('/retrieve-content', {
@@ -185,11 +295,12 @@ async function runSearch() {
     const data = await res.json();
     renderText(data.text || []);
     renderImages(data.images || []);
-    statusEl.textContent = `${(data.text || []).length} text results, ${(data.images || []).length} image results.`;
+    statusText.textContent = `${(data.text || []).length} text results, ${(data.images || []).length} image results.`;
   } catch (err) {
-    statusEl.textContent = 'Error: ' + err.message;
+    statusText.textContent = 'Error: ' + err.message;
   } finally {
     btn.disabled = false;
+    spinner.classList.remove('show');
   }
 }
 
@@ -201,7 +312,7 @@ function renderText(items) {
   textResults.innerHTML = items.map(item => `
     <div class="card">
       <div class="meta">
-        <span>${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
+        <span class="loc">${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number}${item.section_title ? ' · ' + escapeHtml(item.section_title) : ''}</span>
         <span class="score">${item.score.toFixed(3)}</span>
       </div>
       <p>${escapeHtml(item.text)}</p>
@@ -216,9 +327,11 @@ function renderImages(items) {
   }
   imageResults.innerHTML = items.map(item => `
     <div class="card">
-      <img src="${item.url}" alt="${escapeHtml(item.image_id)}" loading="lazy" />
+      <div class="thumb-wrap">
+        <img src="${item.url}" alt="${escapeHtml(item.image_id)}" loading="lazy" />
+      </div>
       <div class="meta">
-        <span>${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number ?? '?'}</span>
+        <span class="loc">${escapeHtml(item.book_id)} · Ch.${item.chapter_number} · Page ${item.page_number ?? '?'}</span>
         <span class="score">${item.score.toFixed(3)}</span>
       </div>
       <p>${escapeHtml(item.caption)}</p>
